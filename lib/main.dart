@@ -92,8 +92,14 @@ class TodoApp extends StatelessWidget {
       ),
       body: Center(
         child: Query(
-          options:
-              QueryOptions(document: graphQlObject.getQuery, pollInterval: 1),
+          options: QueryOptions(document: """query TodoGet{
+                                                  todo {
+                                                    id
+                                                    isCompleted
+                                                    task
+                                                  }
+                                                }
+                                          """, pollInterval: 1),
           builder: (QueryResult result, {VoidCallback refetch}) {
             //  test = GraphQLProvider.of(context).value;
             if (result.errors != null) {
