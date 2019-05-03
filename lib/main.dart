@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:hasura_todo/services/graphQldata.dart';
 
-import 'components/todo_card.dart';
+import 'components/todoCard.dart';
 
 void main() => runApp(
       GraphQLProvider(
@@ -38,50 +38,39 @@ class TodoApp extends StatelessWidget {
                         borderRadius: BorderRadius.all(Radius.circular(8.0))),
                     title: Text("Add task"),
                     content: Form(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
+                        child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
                           TextField(
                             controller: controller,
                             decoration: InputDecoration(labelText: "Task"),
                           ),
                           Center(
-                            child: Padding(
-                              padding: const EdgeInsets.only(top: 10.0),
-                              child: RaisedButton(
-                                elevation: 7,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                color: Colors.black,
-                                onPressed: () async {
-                                  print(client);
-                                  final Map<String, dynamic> response =
-                                      (await client.query(
-                                    QueryOptions(
-                                      document: """mutation DeleteTask{
-                                                  insert_todo(objects: {isCompleted: false, task: "${controller.text}"}) {
-                                                    returning {
-                                                      id
-                                                    }
-                                                  }
-                                      }""",
-                                    ),
-                                  ))
-                                          .data;
-                                  print(response);
-                                  Navigator.pop(context);
-                                },
-                                child: Text(
-                                  "Add",
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ));
+                              child: Padding(
+                                  padding: const EdgeInsets.only(top: 10.0),
+                                  child: RaisedButton(
+                                      elevation: 7,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      color: Colors.black,
+                                      onPressed: () async {
+                                        print(client);
+
+                                        await client.mutate(
+                                          MutationOptions(
+                                            document: addTaskMutation(
+                                                controller.text),
+                                          ),
+                                        );
+
+                                        Navigator.pop(context);
+                                      },
+                                      child: Text(
+                                        "Add",
+                                        style: TextStyle(color: Colors.white),
+                                      ))))
+                        ])));
               });
         },
         child: Icon(Icons.add),
@@ -92,14 +81,7 @@ class TodoApp extends StatelessWidget {
       ),
       body: Center(
         child: Query(
-          options: QueryOptions(document: """query TodoGet{
-                                                  todo {
-                                                    id
-                                                    isCompleted
-                                                    task
-                                                  }
-                                                }
-                                          """, pollInterval: 1),
+          options: QueryOptions(document: fetchQuery(), pollInterval: 1),
           builder: (QueryResult result, {VoidCallback refetch}) {
             //  test = GraphQLProvider.of(context).value;
             if (result.errors != null) {
@@ -117,31 +99,18 @@ class TodoApp extends StatelessWidget {
                   task: result.data["todo"][index]["task"],
                   isCompleted: result.data["todo"][index]["isCompleted"],
                   delete: () async {
-                    final Map<String, dynamic> response = (await client.query(
-                      QueryOptions(
-                        document: """mutation DeleteTask{       
-                                  delete_todo(where: {id: {_eq: ${result.data["todo"][index]["id"]}}}) {
-                                    returning {
-                                      id
-                                    }
-                                  }
-                                }""",
+                    final Map<String, dynamic> response = (await client.mutate(
+                      MutationOptions(
+                        document: deleteTaskMutation(result, index),
                       ),
                     ))
                         .data;
                     print(response);
                   },
                   toggleIsCompleted: () async {
-                    final Map<String, dynamic> response = (await client.query(
-                      QueryOptions(
-                        document: """mutation ToggleTask{       
-                                     update_todo(where: {id: {_eq: ${result.data["todo"][index]["id"]}}}, _set: {isCompleted: ${!result.data["todo"][index]["isCompleted"]}}) {
-                                      returning {
-                                        isCompleted
-                                      }
-                                    }
-                                }""",
-                      ),
+                    final Map<String, dynamic> response = (await client.mutate(
+                      MutationOptions(
+                          document: toggleIsCompletedMutation(result, index)),
                     ))
                         .data;
                     print(response);
