@@ -55,15 +55,12 @@ class TodoApp extends StatelessWidget {
                                       ),
                                       color: Colors.black,
                                       onPressed: () async {
-                                        print(client);
-
                                         await client.mutate(
                                           MutationOptions(
                                             document: addTaskMutation(
                                                 controller.text),
                                           ),
                                         );
-
                                         Navigator.pop(context);
                                       },
                                       child: Text(
