@@ -12,7 +12,6 @@ class TodoCard extends StatelessWidget {
       this.delete,
       this.toggleIsCompleted})
       : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -30,11 +29,10 @@ class TodoCard extends StatelessWidget {
                         ? TextDecoration.lineThrough
                         : TextDecoration.none)),
             leading: Padding(
-              padding: const EdgeInsets.only(left: 18.0),
-              child: Icon(!isCompleted
-                  ? Icons.radio_button_unchecked
-                  : Icons.radio_button_checked),
-            ),
+                padding: const EdgeInsets.only(left: 18.0),
+                child: Icon(!isCompleted
+                    ? Icons.radio_button_unchecked
+                    : Icons.radio_button_checked)),
             trailing: InkWell(
               onTap: () {
                 delete();
